@@ -85,7 +85,7 @@
 
     }
     function saveCanvas(){
-    var img    = c.toDataURL("image/png");
+    var img    = canvasToImage(c,document.getElementById("c_color").value);
     document.getElementById("save_box").innerHTML="<a href="+img+" target='_blank'>Download</a>";
     }
     function check_paint(){
@@ -93,7 +93,55 @@
     paint_unit(c,g_x,g_y,color,pen_width);
     }
     }
+    function canvasBackground(){
+    var c_color = document.getElementById("c_color").value;
+    c.style.backgroundColor=c_color;
+    }
 
+    function canvasToImage(canvas,backgroundColor)
+    {
+    	//cache height and width
+    	var w = canvas.width;
+    	var h = canvas.height;
+    	context = canvas.getContext("2d");
+    	var data;
+
+    	if(backgroundColor)
+    	{
+    		//get the current ImageData for the canvas.
+    		data = context.getImageData(0, 0, w, h);
+
+    		//store the current globalCompositeOperation
+    		var compositeOperation = context.globalCompositeOperation;
+
+    		//set to draw behind current content
+    		context.globalCompositeOperation = "destination-over";
+
+    		//set background color
+    		context.fillStyle = backgroundColor;
+
+    		//draw background / rect on entire canvas
+    		context.fillRect(0,0,w,h);
+    	}
+
+    	//get the image data from the canvas
+    	var imageData = canvas.toDataURL("image/png");
+
+    	if(backgroundColor)
+    	{
+    		//clear the canvas
+    		context.clearRect (0,0,w,h);
+
+    		//restore it with original / cached ImageData
+    		context.putImageData(data, 0,0);
+
+    		//reset the globalCompositeOperation to what it was
+    		context.globalCompositeOperation = compositeOperation;
+    	}
+
+    	//return the Base64 encoded data url string
+    	return imageData;
+    }
 
 
 
@@ -112,6 +160,9 @@ Pen Width: <input id="pen_width" type="text" value="12" style="font-size:9px;wid
 </div>
 <div id="pen_width_box" style="">
 Pen Color: <input id="pen_color" type="color" value="#00FF00" style="font-size:9px; ;" onchange="updatePen();">
+</div>
+<div id="pen_width_box" style="">
+Background Color: <input id="c_color" type="color" value="#FFF" style="font-size:9px; ;" onchange="canvasBackground();">
 </div>
 <div id="buttons_box" style="">
 <input type="button" id="reset_canvas" value="Clear" style=" font-size:10px;" onClick="clearCanvas();"><input type="button" id="save_canvas" value="Save" style="float:left;font-size:10px; " onClick="saveCanvas();">
